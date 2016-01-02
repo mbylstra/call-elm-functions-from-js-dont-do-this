@@ -1,0 +1,64 @@
+<html>
+  <!-- Import the PureElmExamples.js file that was created using
+   elm make PureElmExamples.elm --output=PureElmExamples.js
+-->
+  <p> Have a look at the dev tools console... </p>
+  <script src="PureElmExamples.js"> </script>
+  <script>
+    // Create an "Elm runtime"
+    var elm = Elm.worker(Elm.PureElmExamples);
+
+    // This runtime can now be used to "make" an Elm module, and expose it
+    // for use from JS.
+    var PureElmExamples = Elm.PureElmExamples.make(elm);
+    // The PureElmExamples Elm module is now exposed as a javascript object,
+    // with each function as a property of this object.
+
+    // As you can see, using a function that takes a single string as an
+    // argument is very straightforward. No conversion between Elm and JS
+    // data structures is required.
+    console.log(
+      'PureElmExamples.stringReverse("hello world"):',
+      PureElmExamples.stringReverse("hello world")
+    );
+
+    // Things start to get pretty weird when multiple arguments are required.
+    // I think it has something to do with how currying is implemented in Elm, but don't ask me :)
+    console.log(
+      "PureElmExamples.add(1)(1): ",
+      PureElmExamples.add(1)(1)
+    );
+
+    // You must deal with some very low level private code if you need
+    // to convert between JS and Elm datastructures for which there is
+    // not a one-to-one equivalence (as is the case with numbers and strings)
+
+
+    // Here we expose some private functions that can be be used
+    // to convert between the JS representation of an elm data structure
+    // and a standard JS data structure.
+    var _Utils = Elm.Native.Utils.make(elm);
+    var _List = Elm.Native.List.make(elm);
+
+    // In this example we convert from a JS array to an Elm list, and then
+    // back again, so that we can use the listReverse Elm function.
+    // _Utils.list() is used to convert from a JS array to an Elm list.
+    // _List.toArray() is used to convert from an Elm list to a JS array.
+    console.log(
+      '_List.toArray(PureElmExamples.listReverse(_Utils.list([1,2,3]))): ',
+      _List.toArray(
+        PureElmExamples.listReverse(
+          _Utils.list([1,2,3])
+        )
+      )
+    );
+
+    // WARNING:
+    // Doing this kind of thing is very much discouraged as these internal APIs will
+    // most likely change. There may one day be an official way of of doing this.
+    // You would need a really good reason to use this kind of thing. You
+    // should use Ports instead.
+
+  </script>
+
+</html>
